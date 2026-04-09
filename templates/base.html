@@ -1,34 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="auto">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Scientific Data Portal{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}A structured knowledge system for scientific data formats, tools, and workflows.{% endblock %}">
     {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/pygments.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header>
+    <header class="container">
         <nav>
-            <a href="{% url 'home' %}">SciData Portal</a>
+            <ul>
+                <li><strong><a href="{% url 'home' %}">SciData Portal</a></strong></li>
+            </ul>
             <ul>
                 <li><a href="{% url 'content:browse' %}">Browse</a></li>
-                <li><a href="{% url 'content:browse' %}?type=data_format">Formats</a></li>
-                <li><a href="{% url 'content:browse' %}?type=software_tool">Tools</a></li>
-                <li><a href="{% url 'content:browse' %}?type=data_source">Repositories</a></li>
-                <li><a href="{% url 'content:browse' %}?type=workflow">Workflows</a></li>
-                <li><a href="{% url 'content:browse' %}?type=concept_guide">Concepts</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <div class="container layout">
+        <aside>
+            <nav>
+                <h3>Content Types</h3>
+                <ul>
+                    <li><a href="{% url 'content:browse' %}?type=data_format">Formats</a></li>
+                    <li><a href="{% url 'content:browse' %}?type=software_tool">Tools</a></li>
+                    <li><a href="{% url 'content:browse' %}?type=data_source">Repositories</a></li>
+                    <li><a href="{% url 'content:browse' %}?type=workflow">Workflows</a></li>
+                    <li><a href="{% url 'content:browse' %}?type=concept_guide">Concepts</a></li>
+                </ul>
 
-    <footer>
+                {% block sidebar_tags %}
+                {% if tag_categories %}
+                {% for category, tags in tag_categories.items %}
+                <details>
+                    <summary>{{ category|title }}</summary>
+                    <ul>
+                    {% for tag in tags %}
+                        <li><a href="{% url 'content:browse' %}?tag={{ tag.slug }}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                    </ul>
+                </details>
+                {% endfor %}
+                {% endif %}
+                {% endblock %}
+            </nav>
+        </aside>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="container">
         <p>Scientific Data Portal &mdash; FAIR &middot; DataCite 4.7 &middot; W3C PROV</p>
     </footer>
 

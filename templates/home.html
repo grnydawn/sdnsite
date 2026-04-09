@@ -3,16 +3,25 @@
 {% block title %}Home — Scientific Data Portal{% endblock %}
 
 {% block content %}
-<h1>Scientific Data Portal</h1>
-<p>A structured knowledge system for scientific data formats, tools, and workflows.</p>
+<section class="hero">
+    <h1>Scientific Data Portal</h1>
+    <p>A structured knowledge system for scientific data formats, tools, and workflows.</p>
+    <input type="search" placeholder="Search coming soon..." disabled>
+</section>
 
 <section>
     <h2>Content Types</h2>
-    <ul>
+    <div class="content-type-grid">
     {% for ct in content_types %}
-        <li><a href="{% url 'content:browse' %}?type={{ ct.slug }}">{{ ct.name }}</a> — {{ ct.description }}</li>
+        <article>
+            <a href="{% url 'content:browse' %}?type={{ ct.slug }}">
+                <strong>{{ ct.name }}</strong>
+            </a>
+            <p>{{ ct.description }}</p>
+            <small>{{ ct.item_count }} item{{ ct.item_count|pluralize }}</small>
+        </article>
     {% endfor %}
-    </ul>
+    </div>
 </section>
 
 <section>
@@ -22,7 +31,7 @@
     {% for item in recent_items %}
         <li>
             <a href="{% url 'content:detail' slug=item.slug %}">{{ item.title }}</a>
-            <span>({{ item.content_type.name }})</span>
+            <span class="badge badge--{{ item.content_type.slug }}">{{ item.content_type.name }}</span>
         </li>
     {% endfor %}
     </ul>

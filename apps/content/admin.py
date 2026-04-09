@@ -62,7 +62,7 @@ class ContentItemAdminForm(forms.ModelForm):
         cleaned = super().clean()
         extra_data = cleaned.get("extra_data")
         content_type = cleaned.get("content_type")
-        if content_type and content_type.extra_schema and extra_data:
+        if content_type and content_type.extra_schema and extra_data is not None:
             try:
                 jsonschema.validate(instance=extra_data, schema=content_type.extra_schema)
             except jsonschema.ValidationError as e:

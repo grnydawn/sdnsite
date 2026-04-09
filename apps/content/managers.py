@@ -13,9 +13,16 @@ class ContentItemManager(models.Manager):
         """
         if user.is_staff:
             return self.all()
+
+        # Import here to avoid circular import (ContentItem imports this manager)
+        from apps.content.models.content_item import ContentItem
+
         if user.is_authenticated:
             return self.filter(
-                status="published",
-                visibility__in=["public", "registered"],
+                status=ContentItem.Status.PUBLISHED,
+                visibility__in=[ContentItem.Visibility.PUBLIC, ContentItem.Visibility.REGISTERED],
             )
-        return self.filter(status="published", visibility="public")
+        return self.filter(
+            status=ContentItem.Status.PUBLISHED,
+            visibility=ContentItem.Visibility.PUBLIC,
+        )

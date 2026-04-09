@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} — Scientific Data Portal{% endblock %}
+{% block meta_description %}{{ item.summary|truncatewords:30 }}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{{ item.title }}</h1>
+        <p>{{ item.content_type.name }} &middot; Last updated {{ item.updated_at|date:"N j, Y" }}</p>
+    </header>
+
+    {% if item.summary %}
+    <section>
+        <p>{{ item.summary }}</p>
+    </section>
+    {% endif %}
+
+    <section>
+        {{ item.body_md|linebreaks }}
+    </section>
+</article>
+{% endblock %}

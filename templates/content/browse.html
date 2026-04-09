@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Browse — Scientific Data Portal{% endblock %}
+
+{% block content %}
+<h1>Browse Content</h1>
+
+<nav>
+    <a href="{% url 'content:browse' %}" {% if not current_type %}class="active"{% endif %}>All</a>
+    {% for ct in content_types %}
+        <a href="{% url 'content:browse' %}?type={{ ct.slug }}"
+           {% if current_type == ct.slug %}class="active"{% endif %}>{{ ct.name }}</a>
+    {% endfor %}
+</nav>
+
+{% if items %}
+<ul>
+{% for item in items %}
+    <li>
+        <a href="{% url 'content:detail' slug=item.slug %}">{{ item.title }}</a>
+        <span>({{ item.content_type.name }})</span>
+        {% if item.summary %}<p>{{ item.summary|truncatewords:30 }}</p>{% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+{% include "content/_pagination.html" %}
+
+{% else %}
+<p>No content found.</p>
+{% endif %}
+{% endblock %}

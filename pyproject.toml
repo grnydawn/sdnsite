@@ -1,0 +1,36 @@
+[project]
+name = "scidata-portal"
+version = "0.1.0"
+description = "Scientific Data Portal — a structured knowledge system for scientific data formats, tools, and workflows"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0,<6.0",
+    "psycopg[binary]>=3.1",
+    "celery>=5.3",
+    "redis>=5.0",
+    "django-celery-beat",
+    "django-allauth>=0.63",
+    "django-htmx>=1.17",
+    "django-ratelimit",
+    "whitenoise>=6.6",
+    "Pillow>=10.0",
+    "markdown>=3.5",
+    "nh3>=0.2",
+    "django-markdownx",
+    "python-slugify",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "factory-boy",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short -q"

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home — Scientific Data Portal{% endblock %}
+
+{% block content %}
+<h1>Scientific Data Portal</h1>
+<p>A structured knowledge system for scientific data formats, tools, and workflows.</p>
+
+<section>
+    <h2>Content Types</h2>
+    <ul>
+    {% for ct in content_types %}
+        <li><a href="{% url 'content:browse' %}?type={{ ct.slug }}">{{ ct.name }}</a> — {{ ct.description }}</li>
+    {% endfor %}
+    </ul>
+</section>
+
+<section>
+    <h2>Recently Updated</h2>
+    {% if recent_items %}
+    <ul>
+    {% for item in recent_items %}
+        <li>
+            <a href="{% url 'content:detail' slug=item.slug %}">{{ item.title }}</a>
+            <span>({{ item.content_type.name }})</span>
+        </li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p>No content published yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

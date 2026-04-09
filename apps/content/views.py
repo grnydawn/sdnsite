@@ -1,19 +1,37 @@
+from django.db.models import Count, Q
 from django.shortcuts import render
 from django.views.generic import DetailView, ListView
+
+from apps.taxonomy.models import Tag
 
 from .models import ContentItem, ContentTypeDef
 
 
 def home_view(request):
-    """Landing page with recent published content."""
+    """Landing page with content type cards and recent published content."""
+    content_types = ContentTypeDef.objects.filter(is_active=True).annotate(
+        item_count=Count(
+            "items",
+            filter=Q(items__status="published", items__visibility="public"),
+        )
+    )
     recent_items = ContentItem.objects.visible_to(request.user).select_related(
         "content_type"
     )[:10]
-    content_types = ContentTypeDef.objects.filter(is_active=True)
+
+    # Tag categories for sidebar (D-03)
+    tag_categories = {}
+    for tag in Tag.objects.filter(parent=None).order_by("category", "name"):
+        tag_categories.setdefault(tag.category, []).append(tag)
+
     return render(
         request,
         "home.html",
-        {"recent_items": recent_items, "content_types": content_types},
+        {
+            "content_types": content_types,
+            "recent_items": recent_items,
+            "tag_categories": tag_categories,
+        },
     )
 
 

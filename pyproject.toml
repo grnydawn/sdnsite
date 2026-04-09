@@ -18,6 +18,7 @@ dependencies = [
     "nh3>=0.2",
     "django-markdownx",
     "python-slugify",
+    "jsonschema>=4.0",
 ]
 
 [project.optional-dependencies]

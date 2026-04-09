@@ -1,3 +1,7 @@
+import json
+
+import jsonschema
+from django import forms
 from django.contrib import admin
 
 from apps.content.models import (
@@ -8,6 +12,7 @@ from apps.content.models import (
     RevisionLog,
     SourceReference,
 )
+from apps.taxonomy.models import ContentTag
 
 
 @admin.register(ContentTypeDef)
@@ -32,14 +37,51 @@ class ContentRelationFromInline(admin.TabularInline):
     verbose_name_plural = "Outgoing relations"
 
 
+class ContentTagInline(admin.TabularInline):
+    model = ContentTag
+    extra = 1
+    autocomplete_fields = ["tag"]
+
+
+class ContentItemAdminForm(forms.ModelForm):
+    """Custom form for ContentItem admin: pretty-prints JSON and validates extra_data against schema."""
+
+    class Meta:
+        model = ContentItem
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            for field_name in ("extra_data", "reproducibility"):
+                value = getattr(self.instance, field_name, None)
+                if value:
+                    self.initial[field_name] = json.dumps(value, indent=2)
+
+    def clean(self):
+        cleaned = super().clean()
+        extra_data = cleaned.get("extra_data")
+        content_type = cleaned.get("content_type")
+        if content_type and content_type.extra_schema and extra_data:
+            try:
+                jsonschema.validate(instance=extra_data, schema=content_type.extra_schema)
+            except jsonschema.ValidationError as e:
+                raise forms.ValidationError(
+                    {"extra_data": f"Does not match {content_type.name} schema: {e.message}"}
+                )
+        return cleaned
+
+
 @admin.register(ContentItem)
 class ContentItemAdmin(admin.ModelAdmin):
+    form = ContentItemAdminForm
     list_display = ["title", "content_type", "status", "visibility", "updated_at"]
     list_filter = ["content_type", "status", "visibility"]
+    list_select_related = ["content_type"]
     search_fields = ["title", "slug", "summary"]
     prepopulated_fields = {"slug": ("title",)}
     readonly_fields = ["content_version", "created_at", "updated_at"]
-    inlines = [ContentSourceLinkInline, ContentRelationFromInline]
+    inlines = [ContentTagInline, ContentSourceLinkInline, ContentRelationFromInline]
     fieldsets = [
         (None, {"fields": ["content_type", "title", "slug", "summary", "body_md"]}),
         ("Type-specific data", {"fields": ["extra_data", "schema_version"], "classes": ["collapse"]}),

@@ -40,3 +40,49 @@ class TestHomeView:
         response = client.get("/")
         content = response.content.decode()
         assert "No content published yet." in content
+
+
+@pytest.mark.django_db
+class TestBrowseView:
+    """Smoke tests for ContentBrowseView (TMPL-03)."""
+
+    def test_browse_renders(self, client):
+        """Browse page returns 200."""
+        response = client.get("/browse/")
+        assert response.status_code == 200
+
+    def test_browse_has_card_grid(self, client):
+        """Browse page uses card-grid layout (D-12)."""
+        ContentItemFactory(title="Test Item", status="published", visibility="public")
+        response = client.get("/browse/")
+        content = response.content.decode()
+        assert "card-grid" in content
+
+    def test_browse_shows_item(self, client):
+        """Browse page displays content items."""
+        ContentItemFactory(title="NetCDF Format", status="published", visibility="public")
+        response = client.get("/browse/")
+        content = response.content.decode()
+        assert "NetCDF Format" in content
+
+    def test_browse_has_badge(self, client):
+        """Browse cards have content type badge (D-13)."""
+        ContentItemFactory(title="Test", status="published", visibility="public")
+        response = client.get("/browse/")
+        content = response.content.decode()
+        assert "badge" in content
+
+    def test_browse_type_filter(self, client):
+        """Browse page filters by type parameter."""
+        ct = ContentTypeDefFactory(slug="data_format", name="Data Format")
+        ContentItemFactory(title="HDF5", content_type=ct, status="published", visibility="public")
+        response = client.get("/browse/?type=data_format")
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "HDF5" in content
+
+    def test_browse_empty_state(self, client):
+        """Browse page shows empty state when no items."""
+        response = client.get("/browse/")
+        content = response.content.decode()
+        assert "No content found." in content

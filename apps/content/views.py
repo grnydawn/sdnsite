@@ -44,7 +44,7 @@ class ContentBrowseView(ListView):
     def get_queryset(self):
         qs = ContentItem.objects.visible_to(self.request.user).select_related(
             "content_type"
-        )
+        ).prefetch_related("content_tags__tag")
         content_type_slug = self.request.GET.get("type")
         if content_type_slug:
             qs = qs.filter(content_type__slug=content_type_slug)
@@ -54,6 +54,13 @@ class ContentBrowseView(ListView):
         context = super().get_context_data(**kwargs)
         context["content_types"] = ContentTypeDef.objects.filter(is_active=True)
         context["current_type"] = self.request.GET.get("type", "")
+
+        # Tag categories for sidebar (D-03)
+        tag_categories = {}
+        for tag in Tag.objects.filter(parent=None).order_by("category", "name"):
+            tag_categories.setdefault(tag.category, []).append(tag)
+        context["tag_categories"] = tag_categories
+
         return context
 
 

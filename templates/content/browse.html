@@ -6,23 +6,31 @@
 <h1>Browse Content</h1>
 
 <nav>
-    <a href="{% url 'content:browse' %}" {% if not current_type %}class="active"{% endif %}>All</a>
+    <a href="{% url 'content:browse' %}" {% if not current_type %}aria-current="page"{% endif %}>All</a>
     {% for ct in content_types %}
         <a href="{% url 'content:browse' %}?type={{ ct.slug }}"
-           {% if current_type == ct.slug %}class="active"{% endif %}>{{ ct.name }}</a>
+           {% if current_type == ct.slug %}aria-current="page"{% endif %}>{{ ct.name }}</a>
     {% endfor %}
 </nav>
 
 {% if items %}
-<ul>
+<div class="card-grid">
 {% for item in items %}
-    <li>
-        <a href="{% url 'content:detail' slug=item.slug %}">{{ item.title }}</a>
-        <span>({{ item.content_type.name }})</span>
+    <article>
+        <header>
+            <span class="badge badge--{{ item.content_type.slug }}">{{ item.content_type.name }}</span>
+        </header>
+        <h3><a href="{% url 'content:detail' slug=item.slug %}">{{ item.title }}</a></h3>
         {% if item.summary %}<p>{{ item.summary|truncatewords:30 }}</p>{% endif %}
-    </li>
+        <footer>
+            {% for ct in item.content_tags.all|slice:":3" %}
+                <a href="{% url 'content:browse' %}?tag={{ ct.tag.slug }}" class="tag-chip">{{ ct.tag.name }}</a>
+            {% endfor %}
+            <small>Updated {{ item.updated_at|date:"D M Y" }}</small>
+        </footer>
+    </article>
 {% endfor %}
-</ul>
+</div>
 
 {% include "content/_pagination.html" %}
 

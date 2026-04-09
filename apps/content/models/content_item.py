@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
@@ -87,6 +88,9 @@ class ContentItem(models.Model):
         db_table = "content_item"
         indexes = [
             models.Index(fields=["status", "visibility"], name="idx_ci_status_vis"),
+            GinIndex(fields=["extra_data"], name="idx_ci_extra"),
+            GinIndex(fields=["reproducibility"], name="idx_ci_repro"),
+            GinIndex(fields=["search_vector"], name="idx_ci_fts"),
         ]
         ordering = ["-updated_at"]
 

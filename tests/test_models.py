@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError
 
 from apps.content.models import ContentItem, ContentRelation
+from apps.content.models.revision_log import RevisionLog
 
 from .factories import ContentItemFactory, ContentTypeDefFactory, UserFactory
 
@@ -117,3 +118,60 @@ class TestContentRelation:
         assert rel.pk is not None
         assert item_a.relations_from.count() == 1
         assert item_b.relations_to.count() == 1
+
+
+@pytest.mark.django_db
+class TestRevisionLog:
+    def test_revision_created_on_save(self, content_item):
+        content_item.title = "Changed Title"
+        content_item.save()
+        assert RevisionLog.objects.filter(content_item=content_item).count() == 1
+        revision = RevisionLog.objects.get(content_item=content_item)
+        content_item.refresh_from_db()
+        assert revision.version_number == content_item.content_version
+        assert revision.changed_by is None
+
+    def test_revision_snapshot_has_old_values(self, content_item):
+        old_title = content_item.title
+        content_item.title = "Updated"
+        content_item.save()
+        revision = RevisionLog.objects.get(content_item=content_item)
+        assert revision.snapshot["title"] == old_title
+
+    def test_revision_snapshot_excludes_search_vector(self, content_item):
+        content_item.title = "Changed"
+        content_item.save()
+        revision = RevisionLog.objects.get(content_item=content_item)
+        assert "search_vector" not in revision.snapshot
+
+    def test_revision_snapshot_keys(self, content_item):
+        content_item.title = "Changed"
+        content_item.save()
+        revision = RevisionLog.objects.get(content_item=content_item)
+        expected_keys = [
+            "title", "body_md", "summary", "status", "visibility",
+            "extra_data", "content_version", "slug", "content_type_id",
+        ]
+        for key in expected_keys:
+            assert key in revision.snapshot, f"Missing key: {key}"
+
+    def test_no_revision_on_create(self):
+        ContentItemFactory()
+        assert RevisionLog.objects.count() == 0
+
+
+@pytest.mark.django_db
+class TestAtomicVersion:
+    def test_version_uses_f_expression(self, content_item):
+        assert content_item.content_version == 1
+        content_item.title = "Changed"
+        content_item.save()
+        content_item.refresh_from_db()
+        assert content_item.content_version == 2
+
+    def test_multiple_saves_increment(self, content_item):
+        for i in range(3):
+            content_item.title = f"Title {i}"
+            content_item.save()
+            content_item.refresh_from_db()
+        assert content_item.content_version == 4

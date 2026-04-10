@@ -1,0 +1,80 @@
+/* Project overrides for Pico.css — loaded after pico.min.css */
+
+/* Remove Pico.css max-width constraint for wider layouts */
+body { max-width: 1200px; margin: 0 auto; }
+
+/* Sidebar + main grid layout (D-02) */
+.layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+@media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+}
+
+/* Sidebar styling */
+.layout > aside {
+    position: sticky;
+    top: 1rem;
+}
+.layout > aside h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.layout > aside ul { padding-left: 0; list-style: none; }
+.layout > aside ul li { margin-bottom: 0.25rem; }
+.layout > aside details summary { font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.layout > aside details ul { margin-top: 0.25rem; }
+
+/* Content type cards grid — home page (D-10) */
+.content-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+/* Browse card grid (D-12) */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Content type badge (D-13) */
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    color: #fff;
+}
+.badge--data_format { background: #2e7d32; }
+.badge--software_tool { background: #1565c0; }
+.badge--data_source { background: #6a1b9a; }
+.badge--workflow { background: #e65100; }
+.badge--concept_guide { background: #37474f; }
+
+/* Tag chips */
+.tag-chip {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    background: var(--pico-secondary-background);
+    text-decoration: none;
+}
+.tag-chip:hover { text-decoration: underline; }
+
+/* Hero section — home page (D-09) */
+.hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+}
+.hero h1 { font-size: 1.75rem; font-weight: 600; }
+.hero p { font-size: 1.1rem; margin-bottom: 1.5rem; }
+.hero input[type="search"] { max-width: 400px; margin: 0 auto; }
+
+/* Footer */
+footer { margin-top: 3rem; font-size: 0.85rem; }
+
+/* Link accent color */
+a { color: #1a6fb5; }

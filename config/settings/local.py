@@ -20,19 +20,17 @@ DATABASES = {
     }
 }
 
-# Simpler caching for local dev
+# Redis cache for local dev — full production parity (D-06)
+# Uses db/1 to avoid collision with Celery broker on db/0
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379/1",
     }
 }
 
 # Console email backend
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Disable WhiteNoise compression in dev
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+# WhiteNoise autorefresh in dev — rechecks filesystem on each request (D-01)
+WHITENOISE_AUTOREFRESH = True

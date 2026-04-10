@@ -1,7 +1,9 @@
 import factory
 from django.contrib.auth.models import User
 
-from apps.content.models import ContentItem, ContentTypeDef
+from apps.comments.models import ContentComment
+from apps.content.models import ContentItem, ContentRelation, ContentTypeDef, SourceReference
+from apps.taxonomy.models import Tag
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -36,3 +38,42 @@ class ContentItemFactory(factory.django.DjangoModelFactory):
     body_md = "# Test\n\nThis is test content."
     status = "published"
     visibility = "public"
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Tag
+
+    slug = factory.Sequence(lambda n: f"tag-{n}")
+    name = factory.Sequence(lambda n: f"Tag {n}")
+    category = "domain"
+
+
+class SourceReferenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SourceReference
+
+    title = factory.Sequence(lambda n: f"Source {n}")
+    url = factory.Sequence(lambda n: f"https://example.com/source/{n}")
+    source_type = "official_docs"
+    identifier_type = "URL"
+
+
+class ContentCommentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ContentComment
+
+    content_item = factory.SubFactory(ContentItemFactory)
+    user = factory.SubFactory(UserFactory)
+    body = "A test comment."
+    comment_type = "general"
+    status = "visible"
+
+
+class ContentRelationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ContentRelation
+
+    from_item = factory.SubFactory(ContentItemFactory)
+    to_item = factory.SubFactory(ContentItemFactory)
+    rel_type = "related_to"

@@ -91,6 +91,15 @@ class ContentItemAdmin(admin.ModelAdmin):
         ("Meta", {"fields": ["content_version", "created_at", "updated_at"]}),
     ]
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if change:
+            # Signal created RevisionLog with changed_by=None; patch with admin user
+            revision = obj.revisions.order_by("-version_number").first()
+            if revision and revision.changed_by is None:
+                revision.changed_by = request.user
+                revision.save(update_fields=["changed_by"])
+
 
 @admin.register(SourceReference)
 class SourceReferenceAdmin(admin.ModelAdmin):

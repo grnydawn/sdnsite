@@ -86,3 +86,49 @@ class TestBrowseView:
         response = client.get("/browse/")
         content = response.content.decode()
         assert "No content found." in content
+
+
+@pytest.mark.django_db
+class TestDetailView:
+    """Smoke tests for ContentDetailView (QUAL-04)."""
+
+    def test_detail_renders(self, client):
+        """Detail page returns 200 for published/public item."""
+        item = ContentItemFactory(status="published", visibility="public")
+        response = client.get(f"/browse/{item.slug}/")
+        assert response.status_code == 200
+
+    def test_detail_uses_fallback_template(self, client):
+        """Detail page uses detail_base.html when no per-type template exists."""
+        item = ContentItemFactory(status="published", visibility="public")
+        response = client.get(f"/browse/{item.slug}/")
+        templates_used = [t.name for t in response.templates]
+        assert "content/detail_base.html" in templates_used
+
+    def test_detail_shows_title(self, client):
+        """Detail page renders the item title."""
+        item = ContentItemFactory(title="NetCDF Format Guide", status="published", visibility="public")
+        response = client.get(f"/browse/{item.slug}/")
+        assert b"NetCDF Format Guide" in response.content
+
+    def test_detail_shows_body(self, client):
+        """Detail page renders the markdown body."""
+        item = ContentItemFactory(
+            body_md="## Overview\n\nThis is a test body.",
+            status="published",
+            visibility="public",
+        )
+        response = client.get(f"/browse/{item.slug}/")
+        content = response.content.decode()
+        assert "Overview" in content
+
+    def test_detail_404_for_draft(self, client):
+        """Detail page returns 404 for non-published items."""
+        item = ContentItemFactory(status="draft", visibility="public")
+        response = client.get(f"/browse/{item.slug}/")
+        assert response.status_code == 404
+
+    def test_detail_404_for_nonexistent(self, client):
+        """Detail page returns 404 for non-existent slug."""
+        response = client.get("/browse/nonexistent-slug-xyz/")
+        assert response.status_code == 404
